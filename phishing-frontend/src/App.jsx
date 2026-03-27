@@ -19,7 +19,7 @@ export default function App() {
     setResult(null);
 
     try {
-      const res = await fetch("https://zero-phish-eight.vercel.app/", {
+      const res = await fetch("https://zerophish-6vma.onrender.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
