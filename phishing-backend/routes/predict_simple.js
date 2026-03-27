@@ -17,6 +17,7 @@ router.post("/", async (req, res) => {
   let options = {
     mode: "json", // keep this since your Python returns JSON
     pythonOptions: ["-u"],
+    pythonPath: "python3",
     scriptPath: scriptPath,
     args: [url],
   };
