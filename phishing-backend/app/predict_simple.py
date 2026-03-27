@@ -1,37 +1,33 @@
-"""
-predict_simple.py
------------------
-Loads the SIMPLE (URL-only) ML model and predicts phishing vs legit.
-"""
-
 import sys
 import os
 import joblib
 import numpy as np
+import json
+
+import warnings
+warnings.filterwarnings("ignore")
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
 sys.path.append(PROJECT_ROOT)
 
-# Loading the simple URL-only feature extractor
 from app.url_features import extract_features
 
+MODEL_PATH = os.path.join(PROJECT_ROOT, "model", "model_simple.pkl")
+SCALER_PATH = os.path.join(PROJECT_ROOT, "model", "scaler_simple.pkl")
+FEATURE_LIST_PATH = os.path.join(PROJECT_ROOT, "model", "feature_list_simple.pkl")
 
-# Load Model and Scaler and Feature List (combination)
-MODEL_PATH = "model/model_simple.pkl"
-SCALER_PATH = "model/scaler_simple.pkl"
-FEATURE_LIST_PATH = "model/feature_list_simple.pkl"
-
+# Load once
 try:
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
     feature_list = joblib.load(FEATURE_LIST_PATH)
 except Exception as e:
-    print({"error": f"Failed to load simple model: {e}"})
+    print(json.dumps({"error": f"Model load failed: {str(e)}"}))
     sys.exit(1)
 
+
 def predict_simple(url):
-    """Predict using the SIMPLE (URL-only) model."""
     vector = extract_features(url)
 
     if len(vector) != len(feature_list):
@@ -51,17 +47,22 @@ def predict_simple(url):
         "mode": "simple",
         "url": url,
         "result": label,
-        "probability": float(prob),
-        "features": dict(zip(feature_list, vector))
+        "probability": float(prob)
+        # remove features in production (too heavy)
     }
 
-import json
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "Usage: python predict_simple.py <url>"}))
-        sys.exit(1)
+    try:
+        if len(sys.argv) < 2:
+            raise ValueError("No URL provided")
 
-    url = sys.argv[1]
-    result = predict_simple(url)
-    print(json.dumps(result))
+        url = sys.argv[1]
+        result = predict_simple(url)
+
+        # ALWAYS JSON output
+        print(json.dumps(result))
+
+    except Exception as e:
+        print(json.dumps({"error": str(e)}))
+        sys.exit(1)
