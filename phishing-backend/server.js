@@ -4,7 +4,7 @@ import predictSimple from "./routes/predict_simple.js";
 
 
 const app = express();
-app.use(cors());
+app.use(cors({origin: ["https://zero-phish-eight.vercel.app"]}));
 app.use(express.json());
 
 app.use("/predict", predictSimple);
